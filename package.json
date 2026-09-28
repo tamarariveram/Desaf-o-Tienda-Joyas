@@ -1,0 +1,15 @@
+{
+  "name": "joyas-api",
+  "version": "1.0.0",
+  "description": "API REST Tienda de Joyas - Desafío Módulo 6 (Diseño avanzado de API REST)",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "pg": "^8.13.1",
+    "pg-format": "^1.0.4"
+  }
+}
