@@ -10,7 +10,7 @@ const getJoyas = async ({ limits = 10, page = 1, order_by = "id_ASC" }) => {
     campo,
     direccion,
     limits,
-    offset
+    offset,
   );
 
   try {
@@ -21,7 +21,12 @@ const getJoyas = async ({ limits = 10, page = 1, order_by = "id_ASC" }) => {
   }
 };
 
-const getFilteredJoyas = async ({ precio_min, precio_max, categoria, metal }) => {
+const getFilteredJoyas = async ({
+  precio_min,
+  precio_max,
+  categoria,
+  metal,
+}) => {
   const condiciones = [];
   const valores = [];
 

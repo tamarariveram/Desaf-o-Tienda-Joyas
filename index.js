@@ -15,7 +15,8 @@ app.use(cors());
 function consoleRoute(req, res, next) {
   const route = req.route.path;
   let archivoPrevio = fs.readFileSync("routes.log", "utf-8");
-  let nuevoArchivo = (archivoPrevio += ` RUTA CONSULTADA A LAS ${Date.now()} - ${route}`);
+  let nuevoArchivo =
+    (archivoPrevio += ` RUTA CONSULTADA A LAS ${Date.now()} - ${route}`);
   fs.writeFileSync("routes.log", nuevoArchivo);
   next();
 }
@@ -39,7 +40,6 @@ app.get("/joyas", consoleRoute, async (req, res) => {
     res.status(500).send("Error obteniendo las joyas: " + error.message);
   }
 });
-
 
 app.get("/joyas/filtros", consoleRoute, async (req, res) => {
   try {

@@ -1,10 +1,29 @@
-# API Joyas — Desafío Módulo 6 (estructura alineada al index.js del profe)
+# API Tienda de Joyas
+
+API REST para consultar el inventario de una tienda de joyas. Permite limitar, paginar, ordenar y filtrar los registros, y entrega los resultados con estructura HATEOAS.
+
+## Tecnologías
+
+- Node.js
+- Express
+- PostgreSQL (`pg` y `pg-format`)
+- CORS
+
+## Características
+
+- Listado de joyas con límite, paginación y ordenamiento por query string.
+- Respuesta con estructura HATEOAS (`totalJoyas`, `stockTotal` y `results` con enlaces).
+- Filtros por rango de precio, categoría y metal, con consultas parametrizadas para evitar SQL Injection.
+- Middleware que registra en `routes.log` cada consulta realizada.
+- Manejo de errores con `try/catch`.
+- Respuesta 404 personalizada para rutas inexistentes.
 
 ## Estructura del proyecto
+
 ```
-joyas-api/
 ├── index.js
-├── routes.log          <- vacío, se llena solo al usar la API
+├── package.json
+├── routes.log
 ├── script.sql
 ├── controllers/
 │   └── joya.controller.js
@@ -12,51 +31,69 @@ joyas-api/
     └── dbConnection.js
 ```
 
-## Paso 1: Instalar dependencias
-```
-npm install
-```
-(el `package.json` ya trae express, pg, pg-format y cors. Importante: usa Express 4, ya que la ruta `app.get("*")` no funciona en Express 5.)
+## Instalación
 
-## Paso 2: Crear la base de datos
-Abre tu terminal `psql` y ejecuta el contenido de `script.sql` (crea la base `joyas`,
-la tabla `inventario` y los 6 registros de ejemplo).
+1. Instalar las dependencias:
+   ```
+   npm install
+   ```
+2. Crear la base de datos y la tabla ejecutando `script.sql` en `psql`:
+   ```
+   psql -U postgres -f script.sql
+   ```
+3. En `utils/dbConnection.js`, reemplazar `TU_PASSWORD_AQUI` por la contraseña de tu usuario de PostgreSQL.
+4. Iniciar el servidor:
+   ```
+   node index.js
+   ```
+   El servidor queda disponible en `http://localhost:3000`.
 
-## Paso 3: Configurar la conexión
-Abre `utils/dbConnection.js` y reemplaza `"TU_PASSWORD_AQUI"` por tu contraseña real
-de Postgres.
+## Endpoints
 
-## Paso 4: Crear el archivo de logs (¡importante!)
-Ya te dejé `routes.log` vacío en la carpeta. Si lo borras por error, créalo de nuevo
-vacío antes de levantar el servidor — si no existe, el middleware `consoleRoute`
-va a tirar un error al leerlo.
+### `GET /joyas`
 
-## Paso 5: Levantar el servidor
-```
-node index.js
-```
-Deberías ver en consola:
-```
-🟢 Servidor iniciado con éxito en ---> http://localhost:3000 <---
-💾 Base de datos conectada y funcionando a las ...
-```
+Devuelve las joyas en formato HATEOAS.
 
-## Paso 6: Probar en Thunder Client
+| Parámetro | Descripción | Valor por defecto |
+|---|---|---|
+| `limits` | Cantidad de joyas por página | `10` |
+| `page` | Número de página (la primera es la 1) | `1` |
+| `order_by` | Campo y dirección, por ejemplo `stock_ASC` o `precio_DESC` | `id_ASC` |
 
-**Ruta principal con HATEOAS, límite, página y orden:**
+Ejemplo:
 ```
-GET http://localhost:3000/joyas?limits=3&page=2&order_by=stock_ASC
+GET /joyas?limits=3&page=2&order_by=stock_ASC
 ```
 
-**Ruta de filtros (parametrizada):**
-```
-GET http://localhost:3000/joyas/filtros?precio_min=25000&precio_max=30000&categoria=aros&metal=plata
+Respuesta:
+```json
+{
+  "totalJoyas": 3,
+  "stockTotal": 19,
+  "results": [
+    { "name": "Anillo Wish", "href": "/joyas/joya/5" },
+    { "name": "Collar History", "href": "/joyas/joya/2" },
+    { "name": "Aros Berry", "href": "/joyas/joya/3" }
+  ]
+}
 ```
 
-**Ruta inexistente (para probar el 404 personalizado):**
+### `GET /joyas/filtros`
+
+Devuelve las joyas que cumplen los filtros indicados. Todos los parámetros son opcionales y se pueden combinar.
+
+| Parámetro | Descripción |
+|---|---|
+| `precio_min` | Joyas con precio mayor o igual al valor |
+| `precio_max` | Joyas con precio menor o igual al valor |
+| `categoria` | Categoría de la joya (por ejemplo `aros`) |
+| `metal` | Metal de la joya (por ejemplo `plata`) |
+
+Ejemplo:
 ```
-GET http://localhost:3000/cualquiercosa
+GET /joyas/filtros?precio_min=25000&precio_max=30000&categoria=aros&metal=plata
 ```
 
-Después de probar, abre `routes.log` — debería tener una línea nueva por cada
-consulta que hiciste a `/joyas` o `/joyas/filtros`.
+### Rutas inexistentes
+
+Cualquier otra ruta responde con estado `404` y el texto `Esta ruta no existe`.
